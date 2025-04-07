@@ -1,0 +1,256 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ticket Dashboard{% endblock %}
+
+{% block body %}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Ticket Dashboard</h1>
+    </div>
+
+    <form method="get" action="{{ path('admin_dashboard') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="searchQuery" class="form-control" placeholder="Search Tickets" value="{{ app.request.get('searchQuery') }}">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% set cards = [
+            {'title': 'Open Tickets', 'count': openTicketsCount, 'color': 'primary'},
+            {'title': 'In Progress', 'count': inProgressTicketsCount, 'color': 'info'},
+            {'title': 'Solved Tickets', 'count': solvedTicketsCount, 'color': 'success'},
+            {'title': 'Closed Tickets', 'count': closedTicketsCount, 'color': 'secondary'}
+        ] %}
+        {% for card in cards %}
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-{{ card.color }} shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-{{ card.color }} text-uppercase mb-1">{{ card.title }}</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ card.count }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All Tickets</h6>
+            <div class="search-container">
+                <input type="text" id="ticketSearch" class="form-control" placeholder="Search by title...">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-bordered">
+                    <thead style="position: sticky; top: 0; background: white;">
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>User</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketTableBody">
+                        {% for ticket in allTickets %}
+                        <tr>
+                            <td>{{ ticket.ticketId }}</td>
+                            <td>{{ ticket.title }}</td>
+                            <td>
+                                {% if ticket.status == 'open' %}
+                                    <span class="badge badge-primary">Open</span>
+                                {% elseif ticket.status == 'en cours' %}
+                                    <span class="badge badge-info">In Progress</span>
+                                {% elseif ticket.status == 'résolu' %}
+                                    <span class="badge badge-success">Solved</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ticket.createdAt|date('Y-m-d H:i') }}</td>
+                            <td>
+                                {% if ticket.user %}
+                                    {{ ticket.user.prenom }} {{ ticket.user.nom }}
+                                {% else %}
+                                    Unknown User
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('admin_ticket_show', {'id': ticket.ticketId}) }}" class="btn btn-sm btn-info">View</a>
+                                <a href="{{ path('admin_ticket_message', {'id': ticket.ticketId}) }}" class="btn btn-sm btn-warning">Message</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+        <div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Ticket Status Distribution</h6>
+    </div>
+    <div class="card-body">
+        <div class="chart-pie pt-4 pb-2" style="height: 300px;">  <!-- Added fixed height -->
+            <canvas id="ticketStatusPieChart" height="300"></canvas>  <!-- Added height attribute -->
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <!-- Ensure Chart.js is loaded -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Check if counts are available
+    console.log('Ticket counts:', {
+        open: {{ openTicketsCount }},
+        inProgress: {{ inProgressTicketsCount }},
+        solved: {{ solvedTicketsCount }},
+        closed: {{ closedTicketsCount }}
+    });
+
+    var ctx = document.getElementById("ticketStatusPieChart");
+    
+    // Check if canvas element exists
+    if (!ctx) {
+        console.error('Canvas element not found!');
+        return;
+    }
+
+    try {
+        var ticketStatusPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ["Open", "In Progress", "Solved", "Closed"],
+                datasets: [{
+                    data: [
+                        {{ openTicketsCount }}, 
+                        {{ inProgressTicketsCount }}, 
+                        {{ solvedTicketsCount }}, 
+                        {{ closedTicketsCount }}
+                    ],
+                    backgroundColor: [
+                        '#4e73df', // blue
+                        '#36b9cc', // teal
+                        '#1cc88a', // green
+                        '#858796'  // gray
+                    ],
+                    hoverBackgroundColor: [
+                        '#2e59d9', // darker blue
+                        '#2c9faf', // darker teal
+                        '#17a673', // darker green
+                        '#6c757d'  // darker gray
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        console.log('Chart created successfully');
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
+});
+</script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            $('#ticketSearch').keyup(function() {
+                const searchTerm = $(this).val();
+
+                if (searchTerm.length >= 2 || searchTerm.length === 0) {
+                    $.ajax({
+                        url: '{{ path("admin_ticket_search") }}',
+                        type: 'GET',
+                        data: { term: searchTerm },
+                        dataType: 'json',
+                        success: function(data) {
+                            updateTicketTable(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                        }
+                    });
+                }
+            });
+
+            function updateTicketTable(tickets) {
+                const tableBody = $('#ticketTableBody');
+                tableBody.empty();
+
+                if (tickets.length === 0) {
+                    tableBody.append('<tr><td colspan="6" class="text-center">No tickets found</td></tr>');
+                    return;
+                }
+
+                tickets.forEach(function(ticket) {
+                    const statusBadge = getStatusBadge(ticket.status);
+                    const userName = ticket.user ? ticket.user.prenom + ' ' + ticket.user.nom : 'Unknown User';
+                    const createdAt = new Date(ticket.createdAt.date).toLocaleString();
+
+                    tableBody.append(`
+                        <tr>
+                            <td>${ticket.ticketId}</td>
+                            <td>${ticket.title}</td>
+                            <td>${statusBadge}</td>
+                            <td>${createdAt}</td>
+                            <td>${userName}</td>
+                            <td>
+                                <a href="/admin/ticket/${ticket.ticketId}" class="btn btn-sm btn-info">View</a>
+                                <a href="/admin/ticket/${ticket.ticketId}/message" class="btn btn-sm btn-warning">Message</a>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            function getStatusBadge(status) {
+                switch(status) {
+                    case 'open':
+                        return '<span class="badge badge-primary">Open</span>';
+                    case 'en cours':
+                        return '<span class="badge badge-info">In Progress</span>';
+                    case 'résolu':
+                        return '<span class="badge badge-success">Solved</span>';
+                    default:
+                        return '<span class="badge badge-secondary">Closed</span>';
+                }
+            }
+        });
+    </script>
+{% endblock %}

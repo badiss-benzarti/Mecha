@@ -1,0 +1,68 @@
+<?php 
+// src/Controller/UserMessageController.php
+namespace App\Controller;
+
+use App\Entity\Message;
+use App\Repository\MessageRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\Request;
+
+
+class UserMessageController extends AbstractController
+{
+    #[Route('/my-messages', name: 'user_messages')]
+    public function index(MessageRepository $messageRepository, Security $security): Response
+    {
+        $user = $security->getUser();
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $messages = $messageRepository->findByRecipientWithSender($user);
+
+        return $this->render('user/messages.html.twig', [
+            'messages' => $messages
+        ]);
+    }
+
+    #[Route('/message/{id}', name: 'view_message')]
+    public function viewMessage(Message $message, EntityManagerInterface $em, Security $security): Response
+    {
+        $user = $security->getUser();
+        
+        if ($message->getRecipient() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$message->isRead()) {
+            $message->setIsRead(true);
+            $em->flush();
+        }
+
+        return $this->render('user/view_message.html.twig', [
+            'message' => $message
+        ]);
+    }
+    #[Route('/reclamation/received_messages', name: 'received_messages')]
+    public function receivedMessages(MessageRepository $messageRepository, Security $security): Response
+    {
+        $user = $security->getUser();
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Fetch messages for the logged-in user
+        $messages = $messageRepository->findByRecipientWithSender($user);
+
+        return $this->render('user/messages.html.twig', [
+            'messages' => $messages
+        ]);
+    }
+    
+}

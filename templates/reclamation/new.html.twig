@@ -1,0 +1,142 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %} MechaRift {% endblock %}</title>
+        {% block css %}
+        <link rel="shortcut icon" type="image/icon" href="{{ asset('front/logo/favicon.png') }}"/>
+        <link rel="stylesheet" href="{{ asset('front/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/linearicons.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/flaticon.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/owl.carousel.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/owl.theme.default.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/bootsnav.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/responsive.css') }}">
+        {% endblock %}
+    </head> 
+    <body>
+        <!--[if lte IE 9]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+        <![endif]-->
+	
+		<!--welcome-hero start -->
+		<section id="home" class="welcome-hero">
+
+			<!-- top-area Start -->
+			<div class="top-area">
+				<div class="header-area">
+					<!-- Start Navigation -->
+<nav class="navbar navbar-default bootsnav navbar-sticky navbar-scrollspy" data-minus-value-desktop="70" data-minus-value-mobile="55" data-speed="1000">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="/">MechaRift<span></span></a>
+        </div>
+        
+        <div class="collapse navbar-collapse menu-ui-design" id="navbar-menu">
+            <ul class="nav navbar-nav navbar-right" data-in="fadeInDown" data-out="fadeOutUp">
+                <li class="scroll"><a href="{{ path('app_reclamation') }}">reclamation</a></li>
+               
+                <li class="scroll"><a href="#new-cars">new cars</a></li>
+                <li class="scroll"><a href="#brand">brands</a></li>
+                <li class="scroll"><a href="#contact">contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>	    <!-- End Navigation -->
+				</div><!--/.header-area-->
+			    <div class="clearfix"></div>
+
+			</div><!-- /.top-area-->
+			<!-- top-area End -->
+
+			<div class="container">
+				<div class="welcome-hero-txt text-center">
+					<h2>Contact us !</h2>
+				</div>
+			</div>
+
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">  <!-- Reduced width for better centering -->
+                        <div class="model-search-content" style="background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1);">
+                            <form action="{{ path('app_reclamation_new') }}" method="post" novalidate>
+                                <!-- Title Field -->
+                                <div class="form-group">
+                                    <label for="title" class="form-label">Title</label>
+                                    <input type="text" id="title" class="form-control" name="title" 
+                                           value="{{ submittedData.title }}"
+                                           placeholder="Enter title..."
+                                           style="height: 45px; border-radius: 5px; border: 1px solid #ccc; padding: 10px;">
+                                    {% for error in errors %}
+                                        {% if error.getPropertyPath() == 'title' %}
+                                            <div class="text-danger mt-1">{{ error.getMessage() }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Description Field -->
+                                <div class="form-group mt-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea id="description" class="form-control" name="description" rows="5"
+                                              placeholder="Enter description..."
+                                              style="resize: vertical; border-radius: 5px; border: 1px solid #ccc; padding: 10px;">{{ submittedData.description }}</textarea>
+                                    {% for error in errors %}
+                                        {% if error.getPropertyPath() == 'description' %}
+                                            <div class="text-danger mt-1">{{ error.getMessage() }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="welcome-btn model-search-btn"
+                                            style="padding: 12px 30px; font-size: 16px; text-transform: uppercase;">
+                                        Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+		</section>
+
+		<!-- footer -->
+		<footer id="contact" class="contact">
+			<div class="container">
+				<div class="footer-top">
+					<div class="row">
+						<div class="col-md-3 col-sm-6">
+							<div class="single-footer-widget">
+								<div class="footer-logo">
+									<a href="index.html">MechaRift</a>
+								</div>
+								<p>Your premium automotive service provider.</p>
+								<div class="footer-contact">
+									<p>contact@mecharift.com</p>
+									<p>+1 (123) 456-7890</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+
+        <script src="{{ asset('front/js/jquery.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+        <script src="{{ asset('front/js/bootstrap.min.js') }}"></script>
+        <script src="{{ asset('front/js/bootsnav.js') }}"></script>
+        <script src="{{ asset('front/js/owl.carousel.min.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <script src="{{ asset('front/js/custom.js') }}"></script>
+    </body>
+</html>

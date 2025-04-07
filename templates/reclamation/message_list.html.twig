@@ -1,0 +1,35 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Mes Conversations - MechaRift{% endblock %}
+
+{% block content %}
+<section class="message-section">
+    <div class="container">
+        <h2 class="section-title">Mes Conversations</h2>
+        
+        <div class="conversation-container">
+            {% if conversations|length > 0 %}
+                <div class="conversation-list">
+                    {% for conv in conversations %}
+                        <div class="conversation-card {% if not conv.isRead %}unread{% endif %}">
+                            <div class="conv-header">
+                                <span class="sender">De: {{ conv.sender.fullName }}</span>
+                                <span class="date">{{ conv.createdAt|date('d/m/Y H:i') }}</span>
+                            </div>
+                            <div class="conv-preview">
+                                <p>{{ conv.content|u.truncate(100, '...') }}</p>
+                            </div>
+                            <a href="{{ path('front_conversation_detail', {'ticketId': conv.ticket.id}) }}" 
+                               class="btn-view-conv">
+                                Voir la conversation
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-messages">Aucune conversation pour le moment</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

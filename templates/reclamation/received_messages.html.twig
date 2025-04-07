@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Messages - MechaRift{% endblock %}
+
+{% block body %}
+<!-- welcome-hero start -->
+<section id="home" class="welcome-hero">
+    <div class="top-area">
+        <div class="header-area">
+            <!-- Start Navigation -->
+            <nav class="navbar navbar-default bootsnav navbar-sticky navbar-scrollspy" data-minus-value-desktop="70" data-minus-value-mobile="55" data-speed="1000">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <a class="navbar-brand" href="/">MechaRift<span></span></a>
+                    </div>
+
+                    <div class="collapse navbar-collapse menu-ui-design" id="navbar-menu">
+                        <ul class="nav navbar-nav navbar-right" data-in="fadeInDown" data-out="fadeOutUp">
+                            <li class="scroll"><a href="{{ path('app_reclamation') }}">Reclamation</a></li>
+                            <li class="scroll"><a href="{{ path('received_messages') }}">Messages</a></li>
+                            <li class="scroll"><a href="#new-cars">New Cars</a></li>
+                            <li class="scroll"><a href="#brand">Brands</a></li>
+                            <li class="scroll"><a href="#contact">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav> <!-- End Navigation -->
+        </div><!-- /.header-area-->
+        <div class="clearfix"></div>
+    </div><!-- /.top-area-->
+</section><!-- welcome-hero End -->
+
+<div class="container mt-4">
+    <h2 class="mb-4">Mes Messages Reçus</h2>
+
+    {% if messages|length > 0 %}
+        <div class="list-group">
+            {% for message in messages %}
+                <div class="list-group-item {% if not message.isRead %}list-group-item-warning{% endif %}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            De: {{ message.sender.prenom }} {{ message.sender.nom }}
+                        </h5>
+                        <small>{{ message.createdAt|date('d/m/Y H:i') }}</small>
+                    </div>
+                    <p class="mb-1">{{ message.content|u.truncate(150, '...') }}</p>
+                    <div class="text-end mt-2">
+                        <a href="{{ path('view_message', {'id': message.id}) }}" class="btn btn-sm btn-primary">
+                            Voir la conversation
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Aucun message reçu pour le moment</div>
+    {% endif %}
+</div>
+
+{% endblock %}
