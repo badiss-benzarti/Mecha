@@ -50,6 +50,7 @@ class AdminController extends AbstractController
             'allTickets' => $ticketRepository->searchTickets($searchQuery)
         ]);
     }
+
     #[Route('/admin/tickets/search', name: 'admin_ticket_search', methods: ['GET'])]
     public function searchTicketsAjax(Request $request, TicketRepository $ticketRepository, NormalizerInterface $normalizer): JsonResponse
     {
@@ -181,33 +182,33 @@ class AdminController extends AbstractController
 
         return $this->json(['success' => true]);
     }
-  
-    // src/Controller/AdminController.php
-#[Route('/admin/messages/search', name: 'admin_message_search', methods: ['GET'])]
-public function searchMessages(Request $request, MessageRepository $messageRepository, NormalizerInterface $normalizer): JsonResponse
-{
-    $query = $request->query->get('q', '');
-    
-    if (empty($query)) {
-        return $this->json([]);
+
+    #[Route('/admin/messages/search', name: 'admin_message_search', methods: ['GET'])]
+    public function searchMessages(Request $request, MessageRepository $messageRepository, NormalizerInterface $normalizer): JsonResponse
+    {
+        $query = $request->query->get('q', '');
+        
+        if (empty($query)) {
+            return $this->json([]);
+        }
+
+        // Search messages where current admin is the sender (assuming admin has ID 12)
+        $messages = $messageRepository->searchByUsername($query, 12);
+
+        $data = array_map(function($message) {
+            return [
+                'id' => $message->getId(),
+                'content' => $message->getContent(),
+                'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i'),
+                'recipient' => $message->getRecipient() ? 
+                    $message->getRecipient()->getPrenom().' '.$message->getRecipient()->getNom() : 
+                    'Unknown',
+                'ticketId' => $message->getTicket()->getTicketId(),
+                'ticketTitle' => $message->getTicket()->getTitle()
+            ];
+        }, $messages);
+
+        return $this->json($data);
     }
-
-    // Search messages where current admin is the sender (assuming admin has ID 12)
-    $messages = $messageRepository->searchByUsername($query, 12);
-
-    $data = array_map(function($message) {
-        return [
-            'id' => $message->getId(),
-            'content' => $message->getContent(),
-            'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i'),
-            'recipient' => $message->getRecipient() ? 
-                $message->getRecipient()->getPrenom().' '.$message->getRecipient()->getNom() : 
-                'Unknown',
-            'ticketId' => $message->getTicket()->getTicketId(),
-            'ticketTitle' => $message->getTicket()->getTitle()
-        ];
-    }, $messages);
-
-    return $this->json($data);
-}
+  
 }

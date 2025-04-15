@@ -9,6 +9,7 @@
             height: calc(100vh - 300px);
             overflow-y: auto;
             padding: 20px;
+            margin-bottom: 80px;
         }
         .message {
             margin-bottom: 15px;
@@ -43,73 +44,166 @@
             opacity: 0.8;
         }
         .message-actions {
-            margin-left: 5px;
+            position: relative;
+            margin-left: 10px;
         }
         .typing-area {
             position: fixed;
             bottom: 0;
-            left: 0;
+            left: 250px;
             right: 0;
             background: white;
             padding: 15px;
             border-top: 1px solid #e3e6f0;
+            z-index: 1000;
         }
-        .message-meta i {
+        @media (max-width: 991.98px) {
+            .typing-area {
+                left: 0;
+            }
+        }
+        .dropdown-menu {
+            min-width: auto;
+            padding: 0.5rem 0;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+        .dropdown-item {
+            padding: 0.25rem 1rem;
+            font-size: 0.875rem;
+        }
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #dc3545;
+        }
+        .fa-ellipsis-v {
             cursor: pointer;
-            color: #dc3545; /* Bootstrap danger color for delete icon */
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .fa-ellipsis-v:hover {
+            opacity: 1;
+        }
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
         }
     </style>
 {% endblock %}
 
 {% block body %}
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">
-        Conversation with {{ recipient.prenom }} {{ recipient.nom }}
-        <small class="text-muted">Ticket #{{ ticket.ticketId }}</small>
-    </h1>
-</div>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            Conversation with {{ recipient.prenom }} {{ recipient.nom }}
+            <small class="text-muted">Ticket #{{ ticket.ticketId }}</small>
+        </h1>
+    </div>
 
-<div class="card shadow mb-4">
-    <div class="card-body p-0">
-        <div class="message-container" id="messageContainer">
-            {% for message in messages %}
-                <div class="message {% if message.sender.id == 12 %}sent{% else %}received{% endif %}">
-                    <div class="message-content">
-                        <div class="message-text">{{ message.content }}</div>
-                        <div class="message-meta">
-                            {{ message.createdAt|date('H:i') }}
-                            {% if message.sender.id == 12 %}
-                                <i class="fas fa-check{% if message.isRead %} text-primary{% endif %} ml-1"></i>
-                                <div class="message-actions">
-                                    <i class="fas fa-trash" onclick="deleteMessage({{ message.id }})" title="Delete message"></i>
-                                </div>
-                            {% endif %}
+    <div class="card shadow mb-4">
+        <div class="card-body p-0">
+            <div class="message-container" id="messageContainer">
+                {% for message in messages %}
+                    <div class="message {% if message.sender.id == 12 %}sent{% else %}received{% endif %}">
+                        <div class="message-content">
+                            <div class="message-text">{{ message.content }}</div>
+                            <div class="message-meta">
+                                {{ message.createdAt|date('H:i') }}
+                                {% if message.sender.id == 12 %}
+                                    <i class="fas fa-check{% if message.isRead %} text-primary{% endif %} ml-1"></i>
+                                    <div class="message-actions dropdown">
+                                        <i class="fas fa-ellipsis-v dropdown-toggle"
+                                           id="messageDropdown{{ message.id }}"
+                                           data-bs-toggle="dropdown"
+                                           aria-expanded="false"></i>
+                                        <ul class="dropdown-menu" aria-labelledby="messageDropdown{{ message.id }}">
+                                            <li>
+                                                <a class="dropdown-item text-danger"
+                                                   href="#"
+                                                   onclick="deleteMessage({{ message.id }})">
+                                                    <i class="fas fa-trash me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 
 <div class="typing-area">
-    <form method="post" action="{{ path('admin_send_message', {'id': ticket.ticketId}) }}" class="d-flex">
-        <input type="text" 
-               name="message_content" 
-               class="form-control mr-2" 
-               placeholder="Type your message..." 
-               autocomplete="off"
-               required>
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i>
-        </button>
-    </form>
+    <div class="container-fluid">
+        {% for label, messages in app.flashes %}
+            {% for msg in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-2">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <form method="post" action="{{ path('admin_send_message', {'id': ticket.ticketId}) }}" id="messageForm" class="d-flex">
+            <div class="flex-grow-1 mr-2">
+                <input type="text"
+                       name="message_content"
+                       id="message_content"
+                       class="form-control {% if app.session.get('error') %}is-invalid{% endif %}"
+                       placeholder="Type your message..."
+                       autocomplete="off"
+                       value="{{ app.session.get('last_input') ?? '' }}">
+                {% if app.session.get('error') %}
+                    <div class="invalid-feedback">
+                        {{ app.session.get('error') }}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </form>
+    </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('messageContainer');
         container.scrollTop = container.scrollHeight;
+
+        document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
+            new bootstrap.Dropdown(dropdown);
+        });
+
+        const form = document.getElementById('messageForm');
+        const input = document.getElementById('message_content');
+
+        form.addEventListener('submit', function (e) {
+            if (input.value.trim() === '') {
+                e.preventDefault();
+                input.classList.add('is-invalid');
+                const feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                feedback.textContent = 'The message content cannot be empty.';
+                if (!input.parentNode.querySelector('.invalid-feedback')) {
+                    input.parentNode.appendChild(feedback);
+                }
+            }
+        });
+
+        input.addEventListener('input', function () {
+            if (this.value.trim() !== '') {
+                this.classList.remove('is-invalid');
+                const feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (feedback) feedback.remove();
+            }
+        });
     });
 
     function deleteMessage(messageId) {
@@ -120,7 +214,7 @@
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({ id: messageId })
+                body: JSON.stringify({id: messageId})
             })
             .then(response => response.json())
             .then(data => {

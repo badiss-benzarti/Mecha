@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: "messages")]
@@ -16,34 +17,44 @@ class Message
     #[Groups(['message'])]
     private ?int $id = null;
 
+    #[ORM\Column(type: "text")]
+    #[Groups(['message'])]
+    #[Assert\NotBlank(message: "Message content cannot be empty.")]
+    #[Assert\Length(
+        min: 2,
+        max: 1000,
+        minMessage: "Message must be at least {{ limit }} characters long",
+        maxMessage: "Message cannot be longer than {{ limit }} characters"
+    )]
+    private string $content;
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    #[Groups(['message'])]
+    private bool $isRead = false;
+
     #[ORM\ManyToOne(targetEntity: Users::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: "sender_id", referencedColumnName: "id")]
     #[Groups(['message'])]
     private ?Users $sender = null;
-
-    #[ORM\ManyToOne(targetEntity: Ticket::class)]
-    #[ORM\JoinColumn(name: "ticket_id", referencedColumnName: "ticket_id")]
-    #[Groups(['message'])]
-    private ?Ticket $ticket = null;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
     #[ORM\JoinColumn(name: "recipient_id", referencedColumnName: "id")]
     #[Groups(['message'])]
     private ?Users $recipient = null;
 
-    #[ORM\Column(type: "text")]
+    #[ORM\ManyToOne(targetEntity: Ticket::class)]
+    #[ORM\JoinColumn(name: "ticket_id", referencedColumnName: "ticket_id")]
     #[Groups(['message'])]
-    private ?string $content = null;
+    private ?Ticket $ticket = null;
 
     #[ORM\Column(type: "datetime")]
     #[Groups(['message'])]
-    private ?\DateTimeInterface $createdAt = null;
+    private \DateTimeInterface $createdAt;
 
-    #[ORM\Column(type: "boolean", options: ["default" => false])]
-    #[Groups(['message'])]
-    private bool $isRead = false;
-
-    // Getters and Setters
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -61,17 +72,6 @@ class Message
         return $this;
     }
 
-    public function getTicket(): ?Ticket
-    {
-        return $this->ticket;
-    }
-
-    public function setTicket(?Ticket $ticket): self
-    {
-        $this->ticket = $ticket;
-        return $this;
-    }
-
     public function getRecipient(): ?Users
     {
         return $this->recipient;
@@ -83,7 +83,18 @@ class Message
         return $this;
     }
 
-    public function getContent(): ?string
+    public function getTicket(): ?Ticket
+    {
+        return $this->ticket;
+    }
+
+    public function setTicket(?Ticket $ticket): self
+    {
+        $this->ticket = $ticket;
+        return $this;
+    }
+
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -94,7 +105,7 @@ class Message
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }

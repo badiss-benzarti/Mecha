@@ -6,7 +6,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Doctrine\Common\Collections\ArrayCollection;    
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: \App\Repository\TicketRepository::class)]
 #[ORM\Table(name: 'tickets')]
@@ -52,27 +53,26 @@ class Ticket
     #[Groups(['tickets'])]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\OneToMany(targetEntity: "App\Entity\Message", mappedBy: "ticket")]
-    private $messages;
-
-    public function __construct()
-    {
-        $this->messages = new ArrayCollection();
-    }
-
-    public function getMessages()
-    {
-        return $this->messages;
-    }
-
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(name: 'user_id', type: 'integer')]
     private ?int $userId = null;
 
-    // Getters and Setters
+    #[ORM\OneToMany(targetEntity: "App\Entity\Message", mappedBy: "ticket", cascade: ["remove"])]
+    private Collection $messages;
+
+    public function __construct()
+    {
+        $this->messages = new ArrayCollection();
+    }
+
     public function getTicketId(): ?int
+    {
+        return $this->ticketId;
+    }
+
+    public function getId(): ?int
     {
         return $this->ticketId;
     }
@@ -154,6 +154,14 @@ class Ticket
         return $this;
     }
 
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
     #[ORM\PrePersist]
     public function setTimestamps(): void
     {
@@ -165,10 +173,5 @@ class Ticket
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new \DateTime();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->ticketId;
     }
 }

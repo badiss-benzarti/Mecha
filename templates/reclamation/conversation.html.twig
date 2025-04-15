@@ -1,0 +1,195 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Conversation | MechaRift</title>
+        <link rel="shortcut icon" type="image/icon" href="{{ asset('front/logo/favicon.png') }}"/>
+        <link rel="stylesheet" href="{{ asset('front/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/linearicons.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/flaticon.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/owl.carousel.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/owl.theme.default.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/bootsnav.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/responsive.css') }}">
+        <style>
+            .message-container {
+                max-height: 500px;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+            .message-bubble {
+                padding: 12px 15px;
+                margin-bottom: 15px;
+                border-radius: 15px;
+                max-width: 70%;
+                position: relative;
+                word-wrap: break-word;
+            }
+            .received {
+                background: #f1f1f1;
+                margin-right: auto;
+            }
+            .sent {
+                background: #007bff;
+                color: white;
+                margin-left: auto;
+                text-align: right;
+            }
+            .message-time {
+                font-size: 0.8rem;
+                opacity: 0.8;
+                margin-top: 5px;
+            }
+            .reply-box {
+                border-top: 1px solid #eee;
+                padding-top: 20px;
+                margin-top: 20px;
+            }
+            .text-danger {
+                color: #dc3545;
+                font-size: 0.9rem;
+                margin-top: 5px;
+            }
+            .is-invalid {
+                border-color: #dc3545 !important;
+            }
+        </style>
+    </head> 
+    <body>
+        <!--[if lte IE 9]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+        <![endif]-->
+	
+		<!--welcome-hero start -->
+		<section id="home" class="welcome-hero">
+
+			<!-- top-area Start -->
+			<div class="top-area">
+				<div class="header-area">
+					<!-- Start Navigation -->
+<nav class="navbar navbar-default bootsnav navbar-sticky navbar-scrollspy" data-minus-value-desktop="70" data-minus-value-mobile="55" data-speed="1000">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="/">MechaRift<span></span></a>
+        </div>
+        
+        <div class="collapse navbar-collapse menu-ui-design" id="navbar-menu">
+            <ul class="nav navbar-nav navbar-right" data-in="fadeInDown" data-out="fadeOutUp">
+                <li class="scroll"><a href="{{ path('app_reclamation') }}">reclamation</a></li>
+                <li class="scroll"><a href="{{ path('app_reclamation_msg') }}">Messages</a></li>
+                <li class="scroll"><a href="#new-cars">new cars</a></li>
+                <li class="scroll"><a href="#brand">brands</a></li>
+                <li class="scroll"><a href="#contact">contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>	    <!-- End Navigation -->
+				</div><!--/.header-area-->
+			    <div class="clearfix"></div>
+
+			</div><!-- /.top-area-->
+			<!-- top-area End -->
+
+			<div class="container">
+				<div class="welcome-hero-txt text-center">
+					<h2 style="font-size: 2.5rem;">Conversation</h2>
+					<a href="{{ path('app_reclamation_msg') }}" style="color: #007bff; text-decoration: none; font-size: 1.1rem;">
+						← Back to messages
+					</a>
+				</div>
+			</div>
+
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="model-search-content" style="background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1);">
+                            <div class="message-container">
+                                {% for message in messages %}
+                                    <div class="message-bubble {% if message.sender.id == current_user_id %}sent{% else %}received{% endif %}">
+                                        <div style="font-size: 1.1rem;">
+                                            {{ message.content }}
+                                        </div>
+                                        <div class="message-time">
+                                            {% if message.sender.id == current_user_id %}
+                                                You • {{ message.createdAt|date('M d, Y H:i') }}
+                                            {% else %}
+                                                {{ message.sender.getFullName() }} • {{ message.createdAt|date('M d, Y H:i') }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="reply-box">
+                                <form action="{{ path('message_reply', {'ticketId': ticket.id}) }}" method="post">
+                                    <div class="form-group">
+                                        <textarea name="message_content" 
+                                                  class="form-control {% if app.request.method == 'POST' and (not app.request.request.get('message_content') or app.request.request.get('message_content')|trim == '') %}is-invalid{% endif %}" 
+                                                  rows="3" 
+                                                  placeholder="Type your reply..."
+                                                  style="border-radius: 5px; padding: 15px; font-size: 1.1rem;">{{ app.request.request.get('message_content', '') }}</textarea>
+                                        
+                                        {% if app.request.method == 'POST' and (not app.request.request.get('message_content') or app.request.request.get('message_content')|trim == '') %}
+                                            <div class="text-danger">Message content cannot be empty</div>
+                                        {% endif %}
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reply') }}">
+                                    <button type="submit" class="welcome-btn model-search-btn" 
+                                            style="padding: 12px 30px; font-size: 1rem; text-transform: uppercase; margin-top: 15px;">
+                                        Send Reply
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+		</section>
+
+		<!-- footer -->
+		<footer id="contact" class="contact">
+			<div class="container">
+				<div class="footer-top">
+					<div class="row">
+						<div class="col-md-3 col-sm-6">
+							<div class="single-footer-widget">
+								<div class="footer-logo">
+									<a href="index.html">MechaRift</a>
+								</div>
+								<p>Your premium automotive service provider.</p>
+								<div class="footer-contact">
+									<p>contact@mecharift.com</p>
+									<p>+1 (123) 456-7890</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+
+        <script src="{{ asset('front/js/jquery.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+        <script src="{{ asset('front/js/bootstrap.min.js') }}"></script>
+        <script src="{{ asset('front/js/bootsnav.js') }}"></script>
+        <script src="{{ asset('front/js/owl.carousel.min.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <script src="{{ asset('front/js/custom.js') }}"></script>
+        
+        <script>
+            // Auto-scroll to bottom of messages
+            $(document).ready(function() {
+                const container = $('.message-container');
+                container.scrollTop(container[0].scrollHeight);
+            });
+        </script>
+    </body>
+</html>
