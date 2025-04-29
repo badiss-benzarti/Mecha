@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>New Reclamation Created</title>
+</head>
+<body>
+    <h1>New Reclamation/Ticket Created</h1>
+    
+    <p>A new reclamation has been submitted with the following details:</p>
+    
+    <ul>
+        <li><strong>Title:</strong> {{ ticket.title }}</li>
+        <li><strong>Description:</strong> {{ ticket.description }}</li>
+        <li><strong>Status:</strong> {{ ticket.status }}</li>
+        <li><strong>User ID:</strong> {{ ticket.userId }}</li>
+    </ul>
+    
+    <p>Please log in to the admin panel to view and manage this ticket.</p>
+</body>
+</html>
